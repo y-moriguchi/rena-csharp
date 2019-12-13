@@ -1,4 +1,7 @@
-﻿using System;
+﻿/**
+ * This source code is under the Unlicense. 
+ */
+using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 

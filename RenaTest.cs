@@ -1,3 +1,6 @@
+/**
+ * This source code is under the Unlicense. 
+ */
 using NUnit.Framework;
 using System;
 
