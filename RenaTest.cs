@@ -202,6 +202,15 @@ namespace Morilib
         }
 
         [Test]
+        public void TestAttr()
+        {
+            Rena<int> r = Rena<int>.GetInstance();
+            var matcher = r.Attr(27);
+
+            MatchAttr(matcher, "27", "", 0, 0, 27);
+        }
+
+        [Test]
         public void TestKey()
         {
             Rena<int> r = Rena<int>.Keys("+", "++", "--");

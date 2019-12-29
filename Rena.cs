@@ -9,6 +9,11 @@ namespace Morilib
 {
     public class Rena<T>
     {
+        /// <summary>
+        /// A regex string which matches real number
+        /// </summary>
+        public static readonly string PatternReal = @"[\+\-]?(?:[0-9]+(?:\.[0-9]+)?|\.[0-9]+)(?:[eE][\+\-]?[0-9]+)?";
+
         private static readonly Rena<T> instanceRena = new Rena<T>();
 
         private readonly Func<string, int, T, Result> ignore;
@@ -412,6 +417,16 @@ namespace Morilib
         public Func<string, int, T, Result> Lookahead(Func<string, int, T, Result> exp)
         {
             return LookaheadNot(LookaheadNot(exp));
+        }
+
+        /// <summary>
+        /// set the given value as attribute
+        /// </summary>
+        /// <param name="value">value to set</param>
+        /// <returns></returns>
+        public Func<string, int, T, Result> Attr(T value)
+        {
+            return Action(Str(""), (match, syn, inh) => value);
         }
 
         /// <summary>

@@ -70,12 +70,6 @@ The table shows how to match expression r.equalsId("keyword") by option.
 |keys: ["+"]|match|no match|no match|match|
 |ignore: /-/ and keys: ["+"]|match|no match|match|match|
 
-#### Real Number
-Real number expression is an element of expression and matches any real number.
-```
-r.Real();
-```
-
 #### End of string
 End of string is an element of expression and matches the end of string.
 ```
