@@ -159,6 +159,20 @@ namespace Morilib
         }
 
         [Test]
+        public void TestLetrecn()
+        {
+            Rena<int> r = Rena<int>.GetInstance();
+            var matcher = r.Letrecn(new Rena<int>.LetrecnType[]
+            {
+                (x) => r.Choice(r.Concat(r.Str("("), x[1], r.Str(")")), r.Str("")),
+                (x) => r.Concat(r.Str("["), x[0], r.Str("]"))
+            });
+
+        Match(matcher, "([([])])", "([([])])", 8);
+            Match(matcher, "([([])]", "", 0);
+        }
+
+        [Test]
         public void TestZeroOrMore()
         {
             Rena<int> r = Rena<int>.GetInstance();

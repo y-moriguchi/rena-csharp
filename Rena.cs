@@ -280,10 +280,7 @@ namespace Morilib
             };
         }
 
-        private delegate Func<string, int, T, Result> ILetrec(ILetrec letrec);
-        private delegate Func<string, int, T, Result>[] ILetrecn(ILetrecn letrec);
-        private readonly Func<int, ILetrecn, Func<string, int, T, Result>> FLetrecn =
-            (i, g) => (match, index, attr) => g(g)[i](match, index, attr);
+        public delegate Func<string, int, T, Result> LetrecnType(Func<string, int, T, Result>[] funcs);
 
         /// <summary>
         /// A method which can refer a return values of the function itself.<br>
@@ -291,26 +288,27 @@ namespace Morilib
         /// </summary>
         /// <param name="funcs">functions which are return values itself</param>
         /// <returns>matcher function</returns>
-        public Func<string, int, T, Result> Letrecn(
-            params Func<Func<string, int, T, Result>[], Func<string, int, T, Result>>[] funcs)
+        public Func<string, int, T, Result> Letrecn(params LetrecnType[] funcs)
         {
-            ILetrecn f = g => g(g);
-            ILetrecn h = g => {
-                var prms = new List<Func<string, int, T, Result>>();
-                for(int i = 0; i < funcs.Length; i++)
+            var delays = new Func<string, int, T, Result>[funcs.Length];
+            var memo = new Func<string, int, T, Result>[funcs.Length];
+            Action<int> inner = (i) =>
+            {
+                delays[i] = (match, index, attr) =>
                 {
-                    prms.Add(FLetrecn(i, g));
-                }
-
-                Func<string, int, T, Result>[] args = prms.ToArray();
-                var result = new List<Func<string, int, T, Result>>();
-                foreach(Func<Func<string, int, T, Result>[], Func<string, int, T, Result>> func in funcs)
-                {
-                    result.Add(func(args));
-                }
-                return result.ToArray();
+                    if (memo[i] == null)
+                    {
+                        memo[i] = funcs[i](delays);
+                    }
+                    return memo[i](match, index, attr);
+                };
             };
-            return f(h)[0];
+
+            for(int i = 0; i < funcs.Length; i++)
+            {
+                inner(i);
+            }
+            return delays[0];
         }
 
         /// <summary>
@@ -322,9 +320,18 @@ namespace Morilib
         public Func<string, int, T, Result> Letrec1(
             Func<Func<string, int, T, Result>, Func<string, int, T, Result>> func)
         {
-            ILetrec f = g => g(g);
-            ILetrec h = g => func((match, index, attr) => g(g)(match, index, attr));
-            return f(h);
+            Func<string, int, T, Result> delay = null;
+            Func<string, int, T, Result> memo = null;
+
+            delay = (match, index, attr) =>
+            {
+                if(memo == null)
+                {
+                    memo = func(delay);
+                }
+                return memo(match, index, attr);
+            };
+            return delay;
         }
 
         /// <summary>
@@ -338,17 +345,28 @@ namespace Morilib
             Func<Func<string, int, T, Result>, Func<string, int, T, Result>, Func<string, int, T, Result>> func1,
             Func<Func<string, int, T, Result>, Func<string, int, T, Result>, Func<string, int, T, Result>> func2)
         {
-            ILetrecn f = g => g(g);
-            ILetrecn h = g => {
-                var prm1 = FLetrecn(0, g);
-                var prm2 = FLetrecn(1, g);
+            Func<string, int, T, Result> delay1 = null;
+            Func<string, int, T, Result> memo1 = null;
+            Func<string, int, T, Result> delay2 = null;
+            Func<string, int, T, Result> memo2 = null;
 
-                var result = new Func<string, int, T, Result>[2];
-                result[0] = func1(prm1, prm2);
-                result[1] = func2(prm1, prm2);
-                return result;
+            delay1 = (match, index, attr) =>
+            {
+                if (memo1 == null)
+                {
+                    memo1 = func1(delay1, delay2);
+                }
+                return memo1(match, index, attr);
             };
-            return f(h)[0];
+            delay2 = (match, index, attr) =>
+            {
+                if (memo2 == null)
+                {
+                    memo2 = func2(delay1, delay2);
+                }
+                return memo2(match, index, attr);
+            };
+            return delay1;
         }
 
         /// <summary>
@@ -364,19 +382,38 @@ namespace Morilib
             Func<Func<string, int, T, Result>, Func<string, int, T, Result>, Func<string, int, T, Result>, Func<string, int, T, Result>> func2,
             Func<Func<string, int, T, Result>, Func<string, int, T, Result>, Func<string, int, T, Result>, Func<string, int, T, Result>> func3)
         {
-            ILetrecn f = g => g(g);
-            ILetrecn h = g => {
-                var prm1 = FLetrecn(0, g);
-                var prm2 = FLetrecn(1, g);
-                var prm3 = FLetrecn(2, g);
+            Func<string, int, T, Result> delay1 = null;
+            Func<string, int, T, Result> memo1 = null;
+            Func<string, int, T, Result> delay2 = null;
+            Func<string, int, T, Result> memo2 = null;
+            Func<string, int, T, Result> delay3 = null;
+            Func<string, int, T, Result> memo3 = null;
 
-                var result = new Func<string, int, T, Result>[3];
-                result[0] = func1(prm1, prm2, prm3);
-                result[1] = func2(prm1, prm2, prm3);
-                result[2] = func3(prm1, prm2, prm3);
-                return result;
+            delay1 = (match, index, attr) =>
+            {
+                if (memo1 == null)
+                {
+                    memo1 = func1(delay1, delay2, delay3);
+                }
+                return memo1(match, index, attr);
             };
-            return f(h)[0];
+            delay2 = (match, index, attr) =>
+            {
+                if (memo2 == null)
+                {
+                    memo2 = func2(delay1, delay2, delay3);
+                }
+                return memo2(match, index, attr);
+            };
+            delay3 = (match, index, attr) =>
+            {
+                if (memo3 == null)
+                {
+                    memo3 = func3(delay1, delay2, delay3);
+                }
+                return memo3(match, index, attr);
+            };
+            return delay1;
         }
 
         /// <summary>
